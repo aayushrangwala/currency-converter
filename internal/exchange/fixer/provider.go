@@ -1,6 +1,11 @@
-package currencylayer
+package fixer
 
-import "currency-converter/internal/exchange"
+import (
+	"currency-converter/internal/exchange"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
 
 var _ exchange.Provider = (*provider)(nil)
 
@@ -12,10 +17,10 @@ func New() exchange.Provider {
 	return nil
 }
 
-func (p *provider) LiveRates() (map[string]string, error) {
-	return nil, nil
+func (p *provider) LiveRates() (map[string]float32, error) {
+	return nil, status.Error(codes.Unimplemented, "function not implemented for the provider")
 }
 
 func (p *provider) Currencies() ([]string, error) {
-	return nil, nil
+	return nil, status.Error(codes.Unimplemented, "function not implemented for the provider")
 }
