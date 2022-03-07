@@ -1,0 +1,128 @@
+syntax = "proto3";
+
+package api.proto.v1alpha1.currency.converter;
+
+option go_package = "api.proto.v1alpha1.currencyconverter";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+// CurrencyConverterService takes the currency value and type as input and returns the converted value in expected currency.
+service CurrencyConverterService {
+  // Get currency conversion.
+  rpc Convert(ConversionRequest) returns (ConversionResponse) {
+    option (google.api.http) = {
+      get: "/v1alpha1/currency/convert"
+    };
+  }
+
+  // Get currency conversions in batch.
+  rpc BatchConvert(BatchConversionRequest) returns (BatchConversionResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha1/batch/currency/convert"
+      body: "*"
+    };
+  }
+
+  // List currency exchange rates.
+  rpc ListExchangeRates(ListExchangeRatesRequest) returns (ListExchangeRatesResponse) {
+    option (google.api.http) = {
+      get: "/v1alpha1/currency/rates"
+    };
+  }
+}
+
+// Request to get a currency with value to be converted to another currency.
+message ConversionRequest {
+  // from is the type of currency we want to convert.
+  Currency from = 1 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // to is the currency code we want to convert it to.
+  string to = 2 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Optionla. provider to be used for exchange rates. [default: CurrencyLayer]
+  string exchange_provider = 3;
+}
+
+// Response with the converted currency.
+message ConversionResponse {
+  // converted is the converted currency with code and value.
+  Currency converted = 1;
+
+  // from is the source currency with code and value.
+  Currency from = 2;
+
+  // rate of exchange from the source and target currencies.
+  float exchange_rate = 3;
+
+  // It is the conversion timestamp.
+  google.protobuf.Timestamp conversion_datetime = 4;
+
+  // timestamp at which the exchange rate was taken from.
+  google.protobuf.Timestamp exchange_rate_datetime = 5;
+}
+
+// BatchConversionRequest represents the request to convert currencies in batch.
+message BatchConversionRequest {
+  // List/Array of currencies to be requested for conversions.
+  repeated ConversionRequest currencies = 1 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Optional. (internal) limit of a batch size allowed
+  uint64 batch_limit = 2;
+}
+
+// BatchConversionResponse represents the response to convert currencies in batch.
+message BatchConversionResponse {
+  // List/Array of currencies which are converted.
+  repeated ConversionResponse currencies = 1;
+}
+
+// request for exchange rates for the supported currencies.
+message ListExchangeRatesRequest {
+  OffsetPaginationOptions pagination = 1 [
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // Optional. provider to be used for exchange rates. [default: CurrencyLayer]
+  string exchange_provider = 2;
+
+  // Include total count of exchange rates.
+  bool include_total_count = 3;
+}
+
+// response with the list of exchange rates for the supported currencies.
+message ListExchangeRatesResponse {
+  // List of currencies and their current rate.
+  repeated Currency currencies = 1;
+
+  // total count.
+  double total_count = 2;
+
+  // timestamp at which the exchange rate was taken from.
+  google.protobuf.Timestamp exchange_rate_datetime = 3;
+}
+
+// Currency is the object representing a currency with the code and value of it.
+message Currency {
+  // code is the standardised currency code for a specific country.
+  string code = 1;
+
+  // value is the non-negative value of that currency.
+  string value = 2;
+}
+
+// Options to paginate a response using offsets.
+message OffsetPaginationOptions {
+  // Optional. Offset at which to start returning records.
+  uint64 offset = 1;
+
+  // Optional. Number of records to return.
+  uint64 size = 2;
+}
