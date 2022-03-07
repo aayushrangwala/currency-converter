@@ -1,4 +1,4 @@
-package background_jobs
+package backgroundjobs
 
 import (
 	"context"
