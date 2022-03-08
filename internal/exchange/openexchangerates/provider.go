@@ -1,10 +1,10 @@
 package openexchangerates
 
 import (
-	"currency-converter/internal/exchange"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"currency-converter/internal/exchange"
 )
 
 var _ exchange.Provider = (*provider)(nil)
