@@ -16,10 +16,12 @@ func RunCacheCleaner(ctx context.Context, store cache.Store, interval time.Durat
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ticker.C:
 			store.CleanupAllExpired()
+
 		case <-ctx.Done():
 			cancelFunc()
 			return

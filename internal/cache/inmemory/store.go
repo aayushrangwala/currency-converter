@@ -5,7 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
@@ -67,6 +69,8 @@ func NewStore() cache.Store {
 	}
 }
 
+// AvailableCurrencies returns the available currencies from cache for an exchange provider.
+// Updates the cache for cache miss.
 func (store *inMemory) AvailableCurrencies(exchangeProvider exchange.ProviderType) ([]string, error) {
 	store.mu.RLock()
 	defer store.mu.RUnlock()
@@ -87,6 +91,7 @@ func (store *inMemory) AvailableCurrencies(exchangeProvider exchange.ProviderTyp
 	return currencies, store.SetAvailableCurrencies(exchangeProvider, currencies)
 }
 
+// SetAvailableCurrencies sets the list of available currencies from a provider to redis.
 func (store *inMemory) SetAvailableCurrencies(exchangeProvider exchange.ProviderType, currencyCodes []string) error {
 	if currencyCodes == nil || len(currencyCodes) == 0 {
 		return apierrs.InvalidArgumentError
@@ -100,6 +105,7 @@ func (store *inMemory) SetAvailableCurrencies(exchangeProvider exchange.Provider
 	return nil
 }
 
+// GetExchangeRate returns exchange rate for the passed currency code for the exchange provider.
 func (store *inMemory) GetExchangeRate(currencyCode string, exchangeProvider exchange.ProviderType) (float32, error) {
 	store.mu.RLock()
 	defer store.mu.RUnlock()
@@ -151,9 +157,9 @@ func (store *inMemory) RefreshExchangeRates(providers []exchange.ProviderType) e
 	logger := logrus.New()
 
 	g, _ := errgroup.WithContext(context.Background())
-	workers := len(providers)
 
-	for i := 0; i < workers; i++ {
+	for _, providerType := range providers {
+		exchangeProvider := providerType
 		g.Go(func() error {
 			store.mu.Lock()
 			defer store.mu.Unlock()
@@ -164,31 +170,38 @@ func (store *inMemory) RefreshExchangeRates(providers []exchange.ProviderType) e
 			var rates map[string]float32
 
 			if rates, err = provider.LiveRates(); err != nil {
-				return err
+				logger.WithError(err).Warnf("error while fetching live rates from the provider: [%s]", exchangeProvider)
+
+				// returning with nil error as we want just one successful hit of the LiveRates from any of the passed provider.
+				return nil
 			}
 
 			for code, rate := range rates {
 				if tErr := store.SetExchangeRate(code, exchangeProvider, rate, cache.DefaultExpiration); tErr != nil {
-					if err == nil {
-						err = tErr
-						continue
-					}
+					logger.WithError(err).
+						Warnf("failed to set exchangerate for currency [%s] and provider [%s]", code, exchangeProvider)
 
-					err = errors.Wrapf(tErr,
-						"failed to set exchangerate for currency [%s] and provider [%s]", code, exchangeProvider)
+					err = tErr
 				}
 			}
 
-			return err
+			if err != nil {
+				// we send error only when we have the successful completion of live rates update.
+				return nil
+			}
+
+			return status.Error(codes.OK, "error for sending the signal of first successful live rates updates")
 		})
 	}
 
 	err := g.Wait()
-	if err != nil {
-		logger.WithError(err).Error("refresher workers stopped with error")
-	} else {
-		logger.Info("refresher workers stopped")
+	if err != nil && status.Code(err) == codes.OK {
+		logger.Info("Successful live rates are updated by the one provider")
+
+		return nil
 	}
+
+	logger.Error("Refresher workers stopped. No workers could update exchange rates from the given list of providers")
 	return err
 }
 

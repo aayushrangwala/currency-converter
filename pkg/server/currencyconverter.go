@@ -23,7 +23,9 @@ func NewServer(store cache.Store) pb.CurrencyConverterServiceServer {
 	}
 }
 
-func (server *converterServer) ListExchangeRates(ctx context.Context, request *pb.ListExchangeRatesRequest) (*pb.ListExchangeRatesResponse, error) {
+func (server *converterServer) ListExchangeRates(
+	ctx context.Context,
+	request *pb.ListExchangeRatesRequest) (*pb.ListExchangeRatesResponse, error) {
 	return nil, errors.UnImplementedError
 }
 
@@ -59,6 +61,8 @@ func (server *converterServer) Convert(ctx context.Context, request *pb.Conversi
 	}, nil
 }
 
-func (server *converterServer) BatchConvert(ctx context.Context, request *pb.BatchConversionRequest) (*pb.BatchConversionResponse, error) {
+func (server *converterServer) BatchConvert(
+	_ context.Context,
+	_ *pb.BatchConversionRequest) (*pb.BatchConversionResponse, error) {
 	return nil, errors.UnImplementedError
 }

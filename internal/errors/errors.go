@@ -39,3 +39,21 @@ func IsInternalServer(err error) bool {
 
 	return false
 }
+
+// IsUpstreamServerError returns true if the error passed is UpstreamExchangeRateServer error.
+func IsUpstreamServerError(err error) bool {
+	if UpstreamExchangeRateServerError == err {
+		return true
+	}
+
+	return false
+}
+
+// IsUnImplementedError returns true if the error passed is UnImplemented error.
+func IsUnImplementedError(err error) bool {
+	if codes.Unimplemented == status.Code(err) {
+		return true
+	}
+
+	return false
+}
