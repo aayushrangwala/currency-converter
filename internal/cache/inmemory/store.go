@@ -93,7 +93,7 @@ func (store *inMemory) AvailableCurrencies(exchangeProvider exchange.ProviderTyp
 
 // SetAvailableCurrencies sets the list of available currencies from a provider to redis.
 func (store *inMemory) SetAvailableCurrencies(exchangeProvider exchange.ProviderType, currencyCodes []string) error {
-	if currencyCodes == nil || len(currencyCodes) == 0 {
+	if len(currencyCodes) == 0 {
 		return apierrs.InvalidArgumentError
 	}
 

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	//nolint:gosec
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
@@ -42,12 +43,13 @@ type Store interface {
 // It will be used to set and get the rates.
 func GetKey(currencyCode string, exchangeProvider exchange.ProviderType) string {
 	jsonBytes, _ := json.Marshal(struct {
-		code     string
-		provider string
+		Code     string
+		Provider string
 	}{
-		code:     currencyCode,
-		provider: string(exchangeProvider),
+		Code:     currencyCode,
+		Provider: string(exchangeProvider),
 	})
+	//nolint:gosec
 	md5Sum := md5.Sum(jsonBytes)
 	return fmt.Sprintf("%x", md5Sum[:])
 }

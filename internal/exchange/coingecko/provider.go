@@ -10,6 +10,7 @@ import (
 var _ exchange.Provider = (*provider)(nil)
 
 type provider struct {
+	//nolint:structcheck,unused
 	api string
 }
 

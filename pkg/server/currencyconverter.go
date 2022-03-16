@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -45,14 +46,13 @@ func (server *converterServer) Convert(ctx context.Context, request *pb.Conversi
 	}
 
 	// cache HIT
-
 	// Handle error better. Implemented just for the submission purpose.
 	amount, _ := strconv.ParseFloat(request.GetFrom().Value, 64)
 
 	return &pb.ConversionResponse{
 		Converted: &pb.Currency{
 			Code:  request.GetTo(),
-			Value: strconv.FormatFloat(converter.Convert(rate, amount), 10, 2, 64),
+			Value: fmt.Sprintf("%.2f", converter.Convert(rate, amount)),
 		},
 		From:                 request.GetFrom(),
 		ExchangeRate:         rate,

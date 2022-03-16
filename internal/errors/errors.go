@@ -15,45 +15,25 @@ var (
 
 // IsNotFound returns true if the error is NotFound error.
 func IsNotFound(err error) bool {
-	if codes.NotFound == status.Code(err) {
-		return true
-	}
-
-	return false
+	return codes.NotFound == status.Code(err)
 }
 
 // IsInvalidArgument returns true if the error is NotFound error.
 func IsInvalidArgument(err error) bool {
-	if codes.InvalidArgument == status.Code(err) {
-		return true
-	}
-
-	return false
+	return codes.InvalidArgument == status.Code(err)
 }
 
 // IsInternalServer returns true if the error is NotFound error.
 func IsInternalServer(err error) bool {
-	if codes.Internal == status.Code(err) {
-		return true
-	}
-
-	return false
+	return codes.Internal == status.Code(err)
 }
 
 // IsUpstreamServerError returns true if the error passed is UpstreamExchangeRateServer error.
 func IsUpstreamServerError(err error) bool {
-	if UpstreamExchangeRateServerError == err {
-		return true
-	}
-
-	return false
+	return UpstreamExchangeRateServerError == err
 }
 
 // IsUnImplementedError returns true if the error passed is UnImplemented error.
 func IsUnImplementedError(err error) bool {
-	if codes.Unimplemented == status.Code(err) {
-		return true
-	}
-
-	return false
+	return codes.Unimplemented == status.Code(err)
 }
